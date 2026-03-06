@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot Output Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .output {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .output pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .label {
+            color: #6366f1;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status.pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .message-input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        .message-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Chatbot API Output</h1>
+        <p class="subtitle">Test your Hugging Face Spaces AI integration</p>
+
+        <div class="card">
+            <div class="label">
+                📨 Send a Message
+            </div>
+            <textarea 
+                id="messageInput" 
+                class="message-input"
+                rows="3"
+                placeholder="Type your message here...">Hello! Can you help me learn programming?</textarea>
+            
+            <button onclick="testAPI()" id="testBtn">
+                🚀 Test API Now
+            </button>
+
+            <div class="output" id="output">
+                <div style="color: #64748b; text-align: center; padding: 40px;">
+                    Click "Test API Now" to see the output
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="label">ℹ️ API Details</div>
+            <div style="color: #94a3b8; line-height: 1.8;">
+                <p><strong>Endpoint:</strong> <code style="color: #6366f1;">https://rahul8073-openai-gpt-oss-20b.hf.space/gradio_api/call/respond</code></p>
+                <p><strong>Method:</strong> POST</p>
+                <p><strong>Model:</strong> GPT-OSS-20B</p>
+                <p><strong>Format:</strong> Gradio JSON</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_ENDPOINT = 'https://rahul8073-openai-gpt-oss-20b.hf.space/gradio_api/call/respond';
+
+        async function testAPI() {
+            const btn = document.getElementById('testBtn');
+            const output = document.getElementById('output');
+            const message = document.getElementById('messageInput').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Sending request...';
+            
+            output.innerHTML = `
+                <div class="label">
+                    📤 Request
+                    <span class="status pending">SENDING</span>
+                </div>
+                <pre>${JSON.stringify({
+                    data: [message, "You are a friendly Chatbot.", 512, 0.7, 0.95]
+                }, null, 2)}</pre>
+            `;
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: [
+                            message,
+                            "You are a friendly Chatbot.",
+                            512,
+                            0.7,
+                            0.95
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                output.innerHTML = `
+                    <div class="label">
+                        ✅ Response Received
+                        <span class="status success">SUCCESS</span>
+                    </div>
+                    <pre style="color: #4ade80;">${JSON.stringify(data, null, 2)}</pre>
+                    
+                    <div class="label" style="margin-top: 20px;">
+                        🤖 Bot's Answer
+                    </div>
+                    <div style="background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1;">
+                        ${data.data && data.data[0] ? data.data[0] : '<em style="color: #64748b;">Waiting for stream or no direct response...</em>'}
+                    </div>
+                `;
+
+                // If we have event_id, try streaming
+                if (data.event_id) {
+                    output.innerHTML += `
+                        <div class="label" style="margin-top: 15px;">
+                            ⏳ Streaming from Event ID: ${data.event_id}
+                        </div>
+                    `;
+
+                    try {
+                        const streamResp = await fetch(`${API_ENDPOINT}/${data.event_id}`);
+                        const streamText = await streamResp.text();
+                        
+                        output.innerHTML += `
+                            <div class="label">📥 Stream Data</div>
+                            <pre style="color: #60a5fa;">${streamText}</pre>
+                        `;
+
+                        // Parse SSE events
+                        const lines = streamText.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ') && line !== 'data: null') {
+                                try {
+                                    const sseData = JSON.parse(line.slice(6));
+                                    if (sseData.data && sseData.data[0]) {
+                                        output.innerHTML += `
+                                            <div class="label" style="margin-top: 15px; color: #4ade80;">
+                                                ✨ Final Bot Response
+                                            </div>
+                                            <div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80; margin-top: 10px;">
+                                                ${sseData.data[0]}
+                                            </div>
+                                        `;
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                    } catch (streamErr) {
+                        output.innerHTML += `
+                            <div class="label" style="color: #ef4444;">⚠️ Stream Error</div>
+                            <pre style="color: #ef4444;">${streamErr.message}</pre>
+                        `;
+                    }
+                }
+
+            } catch (error) {
+                output.innerHTML = `
+                    <div class="label">
+                        ❌ Error
+                        <span class="status error">FAILED</span>
+                    </div>
+                    <pre style="color: #ef4444;">${error.message}\n${error.stack}</pre>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Test API Now';
+            }
+        }
+    </script>
+</body>
+</html>
