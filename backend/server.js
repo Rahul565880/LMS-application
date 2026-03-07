@@ -483,6 +483,25 @@ app.put('/api/courses/:id', authenticate, async (req, res) => {
   }
 });
 
+app.delete('/api/courses/:id', authenticate, async (req, res) => {
+  try {
+    if (pool) {
+      // Check if user is admin or instructor
+      const user = await pool.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+      const isAdmin = user.rows[0]?.role === 'admin';
+      
+      if (isAdmin) {
+        await pool.query('DELETE FROM courses WHERE id = $1', [req.params.id]);
+      } else {
+        await pool.query('DELETE FROM courses WHERE id = $1 AND instructor_id = $2', [req.params.id, req.userId]);
+      }
+      res.json({ message: 'Course deleted' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.post('/api/courses/:id/sections', authenticate, async (req, res) => {
   try {
     if (pool) {

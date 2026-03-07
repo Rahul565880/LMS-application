@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { enrollmentService, courseService } from '../services/api';
-import { BookOpen, Clock, Users, Play, LayoutDashboard, GraduationCap } from 'lucide-react';
+import { BookOpen, Clock, Users, Play, LayoutDashboard, GraduationCap, Trash2, Edit } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -10,6 +10,21 @@ const Dashboard = () => {
   const [enrollments, setEnrollments] = useState([]);
   const [instructorCourses, setInstructorCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const isInstructor = user?.role === 'instructor' || user?.role === 'admin';
+
+  const handleDeleteCourse = async (courseId, e) => {
+    e.preventDefault();
+    if (!window.confirm('Are you sure you want to delete this course?')) return;
+    
+    try {
+      await courseService.deleteCourse(courseId);
+      setInstructorCourses(instructorCourses.filter(c => c.id !== courseId));
+      alert('Course deleted successfully!');
+    } catch (err) {
+      alert('Failed to delete course');
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -22,7 +37,7 @@ const Dashboard = () => {
         if (user.role === 'student') {
           const res = await enrollmentService.getMyEnrollments();
           setEnrollments(res.data);
-        } else if (user.role === 'instructor') {
+        } else if (isInstructor) {
           const res = await courseService.getInstructorCourses();
           setInstructorCourses(res.data);
         }
@@ -56,8 +71,7 @@ const Dashboard = () => {
       <div className="container">
         <div className="dashboard-header">
           <h1>Welcome back, {user?.name}!</h1>
-          <p>{user?.role === 'instructor' ? 'Manage your courses and track student progress' : 'Continue your learning journey'}</p>
-        </div>
+          <p>{isInstructor ? 'Manage your courses and track student progress' : 'Continue your learning journey'}</p>
 
         {user?.role === 'student' && (
           <>
@@ -130,7 +144,7 @@ const Dashboard = () => {
           </>
         )}
 
-        {user?.role === 'instructor' && (
+        {isInstructor && (
           <>
             <div style={{ marginBottom: '24px' }}>
               <Link to="/instructor/create-course" className="btn btn-primary">
@@ -157,10 +171,17 @@ const Dashboard = () => {
                       <Link 
                         to={`/instructor/edit-course/${course.id}`}
                         className="btn btn-secondary btn-sm"
-                        style={{ marginTop: '12px', width: '100%' }}
+                        style={{ marginTop: '12px', marginRight: '8px' }}
                       >
-                        Edit Course
+                        <Edit size={14} /> Edit
                       </Link>
+                      <button 
+                        onClick={(e) => handleDeleteCourse(course.id, e)}
+                        className="btn btn-danger btn-sm"
+                        style={{ marginTop: '12px' }}
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
                     </div>
                   </div>
                 ))}
