@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { BookOpen, User, LogOut, LayoutDashboard, GraduationCap, Sun, Moon, Settings, FileText, Dumbbell } from 'lucide-react';
+import { BookOpen, User, LogOut, LayoutDashboard, GraduationCap, Sun, Moon, Settings } from 'lucide-react';
 import './components.css';
 
 const Navbar = () => {
@@ -34,8 +34,6 @@ const Navbar = () => {
 
         <div className="navbar-links">
           <Link to="/courses" className="nav-link"><BookOpen size={18} /> Courses</Link>
-          <Link to="/practice" className="nav-link"><Dumbbell size={18} /> Practice</Link>
-          <Link to="/notes" className="nav-link"><FileText size={18} /> Notes</Link>
           {user?.role === 'instructor' && (
             <Link to="/instructor/create-course" className="nav-link">Create Course</Link>
           )}
