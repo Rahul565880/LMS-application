@@ -1,16 +1,6 @@
 import axios from 'axios';
 
-const DEFAULT_LOCAL_API_URL = 'http://localhost:5000/api';
-const configuredApiUrl = import.meta.env.VITE_API_URL;
-const API_URL = configuredApiUrl || (
-  typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
-    ? DEFAULT_LOCAL_API_URL
-    : '/api'
-);
-
-if (import.meta.env.PROD && !configuredApiUrl && typeof window !== 'undefined') {
-  console.warn('VITE_API_URL is not set. Frontend will call /api on the same domain.');
-}
+const API_URL = 'https://lms-application-2.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
