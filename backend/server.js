@@ -715,6 +715,105 @@ app.get('/api/progress/lesson/:lessonId', authenticate, async (req, res) => {
   }
 });
 
+// Payment routes with Razorpay
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_demo';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'demo_secret';
+
+app.post('/api/payment/create-order', authenticate, async (req, res) => {
+  try {
+    const { courseId, amount } = req.body;
+    
+    if (!pool) {
+      return res.status(500).json({ message: 'Database not connected' });
+    }
+    
+    // Get course details
+    const course = await pool.query('SELECT * FROM courses WHERE id = $1', [courseId]);
+    if (course.rows.length === 0) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    
+    // Check if already enrolled
+    const enrollment = await pool.query(
+      'SELECT * FROM enrollments WHERE user_id = $1 AND course_id = $2',
+      [req.userId, courseId]
+    );
+    
+    if (enrollment.rows.length > 0) {
+      return res.status(400).json({ message: 'Already enrolled in this course' });
+    }
+    
+    // Create order (in production, use Razorpay API)
+    const orderId = 'order_' + Date.now();
+    const amountInPaise = parseInt(amount) * 100;
+    
+    // Store pending payment
+    await pool.query(
+      'INSERT INTO payments (user_id, course_id, amount, status, razorpay_order_id) VALUES ($1, $2, $3, $4, $5)',
+      [req.userId, courseId, amountInPaise, 'pending', orderId]
+    );
+    
+    res.json({
+      orderId,
+      amount: amountInPaise,
+      currency: 'INR',
+      keyId: RAZORPAY_KEY_ID
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/payment/verify', authenticate, async (req, res) => {
+  try {
+    const { courseId, paymentId, orderId } = req.body;
+    
+    if (!pool) {
+      return res.status(500).json({ message: 'Database not connected' });
+    }
+    
+    // Update payment status
+    await pool.query(
+      "UPDATE payments SET status = 'completed', razorpay_payment_id = $1 WHERE razorpay_order_id = $2",
+      [paymentId, orderId]
+    );
+    
+    // Create enrollment
+    await pool.query(
+      'INSERT INTO enrollments (user_id, course_id) VALUES ($1, $2)',
+      [req.userId, courseId]
+    );
+    
+    // Update course enrollments count
+    await pool.query(
+      'UPDATE courses SET enrollments_count = enrollments_count + 1 WHERE id = $1',
+      [courseId]
+    );
+    
+    res.json({ success: true, message: 'Payment successful' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Initialize payments table
+const initPayments = async () => {
+  if (pool) {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS payments (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(50) NOT NULL,
+        course_id VARCHAR(50) NOT NULL,
+        amount INTEGER NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
+        razorpay_order_id VARCHAR(100),
+        razorpay_payment_id VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).catch(() => {});
+  }
+};
+
 const PORT = process.env.PORT || 5000;
 initDB().then(() => {
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

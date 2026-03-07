@@ -72,4 +72,9 @@ export const progressService = {
   getPrevLesson: (courseId, currentLessonId) => api.get(`/progress/prev/${courseId}/${currentLessonId}`)
 };
 
+export const paymentService = {
+  createOrder: (courseId, amount) => api.post('/payment/create-order', { courseId, amount }),
+  verifyPayment: (courseId, paymentId, orderId) => api.post('/payment/verify', { courseId, paymentId, orderId })
+};
+
 export default api;

@@ -33,7 +33,7 @@ const seedDB = async () => {
                 thumbnail: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800',
                 instructorId: i1.rows[0].id,
                 category: 'Programming',
-                price: 0,
+                price: 499,
                 whatYouWillLearn: 'Python basics|Variables|Data types|Control flow|Functions|OOP',
                 requirements: 'No prior coding experience needed',
                 sections: [
@@ -76,7 +76,7 @@ const seedDB = async () => {
                 thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800',
                 instructorId: i2.rows[0].id,
                 category: 'Programming',
-                price: 0,
+                price: 599,
                 whatYouWillLearn: 'Java basics|OOP|Collections|Exception Handling',
                 requirements: 'Basic programming knowledge',
                 sections: [
@@ -119,7 +119,7 @@ const seedDB = async () => {
                 thumbnail: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800',
                 instructorId: i3.rows[0].id,
                 category: 'Web Development',
-                price: 0,
+                price: 399,
                 whatYouWillLearn: 'HTML basics|Tags|Forms|Semantic HTML',
                 requirements: 'No prior experience needed',
                 sections: [
@@ -162,7 +162,7 @@ const seedDB = async () => {
                 thumbnail: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
                 instructorId: i3.rows[0].id,
                 category: 'Web Development',
-                price: 0,
+                price: 449,
                 whatYouWillLearn: 'CSS basics|selectors|flexbox|grid|animations',
                 requirements: 'Basic HTML knowledge',
                 sections: [
@@ -205,7 +205,7 @@ const seedDB = async () => {
                 thumbnail: 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=800',
                 instructorId: i2.rows[0].id,
                 category: 'Web Development',
-                price: 0,
+                price: 449,
                 whatYouWillLearn: 'JavaScript basics|DOM|Events|Async|Functions',
                 requirements: 'Basic HTML/CSS knowledge',
                 sections: [
@@ -248,7 +248,7 @@ const seedDB = async () => {
                 thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800',
                 instructorId: i4.rows[0].id,
                 category: 'Backend',
-                price: 0,
+                price: 449,
                 whatYouWillLearn: 'Django basics|Models|Views|Templates|Admin',
                 requirements: 'Python knowledge required',
                 sections: [

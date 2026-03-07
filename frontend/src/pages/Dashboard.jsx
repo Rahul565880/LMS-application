@@ -72,6 +72,7 @@ const Dashboard = () => {
         <div className="dashboard-header">
           <h1>Welcome back, {user?.name}!</h1>
           <p>{isInstructor ? 'Manage your courses and track student progress' : 'Continue your learning journey'}</p>
+        </div>
 
         {user?.role === 'student' && (
           <>

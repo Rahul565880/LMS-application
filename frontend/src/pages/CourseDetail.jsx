@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { courseService, enrollmentService, progressService, authService } from '../services/api';
+import { courseService, enrollmentService, progressService, paymentService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Play, Clock, Users, BookOpen, Check, ChevronDown, ChevronUp, Lock, PlayCircle } from 'lucide-react';
+import { Play, Clock, Users, BookOpen, Check, ChevronDown, ChevronUp, Lock, PlayCircle, ShoppingCart } from 'lucide-react';
 
 const CourseDetail = () => {
   const { slug } = useParams();
@@ -13,6 +13,43 @@ const CourseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
+  const [processingPayment, setProcessingPayment] = useState(false);
+
+  const handleBuyNow = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (!course || course.price === 0) {
+      handleEnroll();
+      return;
+    }
+
+    setProcessingPayment(true);
+
+    try {
+      // Create order
+      const orderRes = await paymentService.createOrder(course.id, course.price);
+      const { orderId, amount, keyId } = orderRes.data;
+
+      // For demo, simulate payment success
+      // In production, use Razorpay Checkout
+      alert(`Demo Payment: ₹${course.price}\n\nIn production, Razorpay checkout would open here.\n\nClick OK to simulate successful payment.`);
+      
+      // Verify payment
+      await paymentService.verifyPayment(course.id, 'demo_payment_id', orderId);
+      
+      setIsEnrolled(true);
+      alert('Payment successful! You are now enrolled.');
+      navigate(`/learn/${course.slug}`);
+    } catch (err) {
+      console.error(err);
+      alert('Payment failed: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
 
   useEffect(() => {
     courseService.getCourseBySlug(slug)
@@ -131,12 +168,25 @@ const CourseDetail = () => {
                 </Link>
               </>
             ) : (
-              <button 
-                className="btn btn-primary enroll-btn" 
-                onClick={handleEnroll}
-              >
-                {course.price === 0 ? 'Enroll for Free' : 'Enroll Now'}
-              </button>
+              <>
+                {course.price > 0 ? (
+                  <button 
+                    className="btn btn-primary enroll-btn" 
+                    onClick={handleBuyNow}
+                    disabled={processingPayment}
+                  >
+                    <ShoppingCart size={20} />
+                    {processingPayment ? 'Processing...' : `Buy Now - ₹${course.price}`}
+                  </button>
+                ) : (
+                  <button 
+                    className="btn btn-primary enroll-btn" 
+                    onClick={handleEnroll}
+                  >
+                    {course.price === 0 ? 'Enroll for Free' : 'Enroll Now'}
+                  </button>
+                )}
+              </>
             )}
             
             {firstLesson && (
