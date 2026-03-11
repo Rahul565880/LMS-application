@@ -548,6 +548,50 @@
   font-size: 0.85rem;
 }
 
+.progress-overview-card {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  background: var(--dark-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.progress-overview-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-overview-right h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+.progress-overview-right p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.progress-stats-mini {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.progress-stat-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
 /* Course Detail */
 .course-detail {
   padding: 40px 0;

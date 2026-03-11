@@ -2,7 +2,38 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { enrollmentService, courseService } from '../services/api';
-import { BookOpen, Clock, Users, Play, LayoutDashboard, GraduationCap, Trash2, Edit } from 'lucide-react';
+import { BookOpen, Clock, Users, Play, LayoutDashboard, GraduationCap, Trash2, Edit, TrendingUp, Award } from 'lucide-react';
+
+const CircularProgress = ({ progress, size = 120 }) => {
+  const radius = (size - 12) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (progress / 100) * circumference;
+  
+  return (
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="var(--border)"
+        strokeWidth="8"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="var(--primary)"
+        strokeWidth="8"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+      />
+    </svg>
+  );
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -102,6 +133,35 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+
+            {enrollments.length > 0 && (
+              <div className="progress-overview-card">
+                <div className="progress-overview-left">
+                  <CircularProgress 
+                    progress={enrollments.length > 0 
+                      ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length)
+                      : 0} 
+                  />
+                </div>
+                <div className="progress-overview-right">
+                  <h3><TrendingUp size={20} /> Learning Progress</h3>
+                  <p>You've completed {enrollments.filter(e => e.progress === 100).length} of {enrollments.length} courses</p>
+                  <div className="progress-stats-mini">
+                    <div className="progress-stat-mini">
+                      <Award size={16} />
+                      <span>{enrollments.filter(e => e.progress === 100).length} Completed</span>
+                    </div>
+                    <div className="progress-stat-mini">
+                      <BookOpen size={16} />
+                      <span>{enrollments.filter(e => e.progress > 0 && e.progress < 100).length} In Progress</span>
+                    </div>
+                  </div>
+                  <Link to="/courses" className="btn btn-primary btn-sm">
+                    Continue Learning
+                  </Link>
+                </div>
+              </div>
+            )}
 
             <h2 style={{ marginBottom: '24px' }}>My Courses</h2>
             
