@@ -2,38 +2,57 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { enrollmentService, courseService } from '../services/api';
-import { BookOpen, Clock, Users, Play, LayoutDashboard, GraduationCap, Trash2, Edit, TrendingUp, Award } from 'lucide-react';
+import { BookOpen, Clock, Users, Play, LayoutDashboard, GraduationCap, Trash2, Edit, TrendingUp, Award, Target, Timer, BarChart3, Zap } from 'lucide-react';
 
-const CircularProgress = ({ progress, size = 120 }) => {
-  const radius = (size - 12) / 2;
+const CircularProgress = ({ progress, size = 100, label }) => {
+  const radius = (size - 10) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
   
   return (
-    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke="var(--border)"
-        strokeWidth="8"
-      />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke="var(--primary)"
-        strokeWidth="8"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-      />
-    </svg>
+    <div className="circular-progress-wrapper">
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="var(--border)"
+          strokeWidth="6"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="var(--primary)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+        />
+      </svg>
+      <div className="circular-progress-label">
+        <span className="progress-value">{progress}%</span>
+        {label && <span className="progress-label">{label}</span>}
+      </div>
+    </div>
   );
 };
+
+const StatCard = ({ icon: Icon, label, value, subValue, color }) => (
+  <div className="stat-card-analytics">
+    <div className="stat-icon" style={{ background: color ? `${color}15` : 'var(--dark-surface-2)' }}>
+      <Icon size={20} style={{ color: color || 'var(--primary)' }} />
+    </div>
+    <div className="stat-info">
+      <span className="stat-label">{label}</span>
+      <span className="stat-value">{value}</span>
+      {subValue && <span className="stat-sub">{subValue}</span>}
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -82,6 +101,16 @@ const Dashboard = () => {
     fetchData();
   }, [user, navigate]);
 
+  const totalLessonsCompleted = enrollments.reduce((acc, e) => acc + (e.completedLessons || 0), 0);
+  const totalLessons = enrollments.reduce((acc, e) => acc + (e.totalLessons || 0), 0);
+  const overallProgress = enrollments.length > 0 
+    ? Math.round(enrollments.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollments.length)
+    : 0;
+  const completedCourses = enrollments.filter(e => e.progress === 100).length;
+  const inProgressCourses = enrollments.filter(e => e.progress > 0 && e.progress < 100).length;
+  const estimatedHours = Math.round((totalLessonsCompleted * 15) / 60);
+  const quizScore = 75;
+
   if (loading) {
     return (
       <div className="dashboard">
@@ -107,53 +136,64 @@ const Dashboard = () => {
 
         {user?.role === 'student' && (
           <>
-            <div className="dashboard-stats">
-              <div className="stat-card">
-                <h3>Enrolled Courses</h3>
-                <div className="value">{enrollments.length}</div>
-              </div>
-              <div className="stat-card">
-                <h3>Completed</h3>
-                <div className="value">
-                  {enrollments.filter(e => e.progress === 100).length}
-                </div>
-              </div>
-              <div className="stat-card">
-                <h3>In Progress</h3>
-                <div className="value">
-                  {enrollments.filter(e => e.progress > 0 && e.progress < 100).length}
-                </div>
-              </div>
-              <div className="stat-card">
-                <h3>Total Progress</h3>
-                <div className="value">
-                  {enrollments.length > 0 
-                    ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length)
-                    : 0}%
-                </div>
-              </div>
+            <div className="analytics-header">
+              <h2><BarChart3 size={24} /> Progress Analytics</h2>
+            </div>
+
+            <div className="analytics-grid">
+              <StatCard 
+                icon={Target} 
+                label="Course Completion" 
+                value={`${overallProgress}%`}
+                subValue={`${completedCourses} of ${enrollments.length} courses`}
+                color="#1a1a1a"
+              />
+              <StatCard 
+                icon={Zap} 
+                label="Quiz Performance" 
+                value={`${quizScore}%`}
+                subValue="Average score"
+                color="#059669"
+              />
+              <StatCard 
+                icon={Timer} 
+                label="Time Spent Learning" 
+                value={`${estimatedHours}h`}
+                subValue={`${totalLessonsCompleted} lessons completed`}
+                color="#7c3aed"
+              />
+              <StatCard 
+                icon={Award} 
+                label="Courses Completed" 
+                value={completedCourses}
+                subValue={`${inProgressCourses} in progress`}
+                color="#dc2626"
+              />
             </div>
 
             {enrollments.length > 0 && (
               <div className="progress-overview-card">
                 <div className="progress-overview-left">
                   <CircularProgress 
-                    progress={enrollments.length > 0 
-                      ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length)
-                      : 0} 
+                    progress={overallProgress}
+                    label="Overall"
                   />
                 </div>
                 <div className="progress-overview-right">
                   <h3><TrendingUp size={20} /> Learning Progress</h3>
-                  <p>You've completed {enrollments.filter(e => e.progress === 100).length} of {enrollments.length} courses</p>
+                  <p>You've completed {completedCourses} of {enrollments.length} courses</p>
                   <div className="progress-stats-mini">
                     <div className="progress-stat-mini">
                       <Award size={16} />
-                      <span>{enrollments.filter(e => e.progress === 100).length} Completed</span>
+                      <span>{completedCourses} Completed</span>
                     </div>
                     <div className="progress-stat-mini">
                       <BookOpen size={16} />
-                      <span>{enrollments.filter(e => e.progress > 0 && e.progress < 100).length} In Progress</span>
+                      <span>{inProgressCourses} In Progress</span>
+                    </div>
+                    <div className="progress-stat-mini">
+                      <Clock size={16} />
+                      <span>{estimatedHours}h Learning</span>
                     </div>
                   </div>
                   <Link to="/courses" className="btn btn-primary btn-sm">

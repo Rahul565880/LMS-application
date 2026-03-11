@@ -59,6 +59,36 @@ button {
 
 input, textarea, select {
   font-family: inherit;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #ffffff;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: #999999;
+}
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 6px;
+}
+
+.form-group {
+  margin-bottom: 20px;
 }
 
 .container {
@@ -208,11 +238,25 @@ input, textarea, select {
   .grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
   .grid-4, .grid-3, .grid-2 {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  .progress-overview-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  .progress-stats-mini {
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }
 
