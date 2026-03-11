@@ -110,7 +110,7 @@ const CourseCard = ({ course }) => {
         <img src={course.thumbnail} alt={course.title} />
         <span className="course-card-badge badge badge-primary">{course.category}</span>
         <span className="course-card-price">
-          {course.price === 0 ? 'Free' : `$${(course.price / 100).toFixed(2)}`}
+          {course.price === 0 ? 'Free' : `₹${(course.price / 100).toFixed(0)}`}
         </span>
       </div>
       <div className="course-card-content">

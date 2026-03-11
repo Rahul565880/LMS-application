@@ -114,7 +114,26 @@ exports.deleteCourse = async (req, res) => {
 
 exports.getInstructorCourses = async (req, res) => {
   try {
-    const courses = await Course.find({ instructor: req.user._id })
+    let courses;
+    if (req.user.role === 'admin') {
+      courses = await Course.find()
+        .populate('instructor', 'name avatar')
+        .sort('-createdAt');
+    } else {
+      courses = await Course.find({ instructor: req.user._id })
+        .populate('instructor', 'name avatar')
+        .sort('-createdAt');
+    }
+
+    res.json(courses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getAllCoursesForAdmin = async (req, res) => {
+  try {
+    const courses = await Course.find()
       .populate('instructor', 'name avatar')
       .sort('-createdAt');
 
